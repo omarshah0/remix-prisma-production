@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { config } from '~/config/config.server'
 
 declare global {
   var __db__: PrismaClient | undefined
@@ -6,7 +7,7 @@ declare global {
 
 let db: PrismaClient
 
-if (process.env.NODE_ENV === 'production') {
+if (config.server.env === 'production') {
   db = new PrismaClient()
 } else {
   if (!global.__db__) {

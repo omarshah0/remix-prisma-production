@@ -1,6 +1,7 @@
 import { createCookieSessionStorage, redirect } from '@remix-run/node'
+import { config } from '~/config/config.server'
 
-const sessionSecret = process.env.SESSION_SECRET
+const sessionSecret = config.session.secret
 if (!sessionSecret) {
   throw new Error('SESSION_SECRET must be set')
 }
@@ -8,11 +9,11 @@ if (!sessionSecret) {
 const storage = createCookieSessionStorage({
   cookie: {
     name: 'app_session',
-    secure: process.env.NODE_ENV === 'production',
+    secure: config.server.env === 'production',
     secrets: [sessionSecret],
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: config.session.expiry,
     httpOnly: true,
   },
 })
