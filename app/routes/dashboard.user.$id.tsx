@@ -1,5 +1,7 @@
 // Types
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import type { User } from '~/repository/admin/types';
+import type { AdminPermission } from '~/utils/adminPermissions.server';
 
 // Remix React
 import { Form, useLoaderData, useNavigation, useActionData, Link } from '@remix-run/react';
@@ -10,7 +12,9 @@ import { useEffect, useRef } from 'react';
 // Repository
 import { requireUserId } from '~/services/auth.server';
 import { getById, update } from '~/repository/admin/index.server';
-import type { User } from '~/repository/admin/types';
+import { getById as getPermissionsById } from '~/repository/adminPermissions/index.server';
+// Utils
+import { hasPermission } from '~/utils/adminPermissions.server';
 
 // Inline Types
 type LoaderData = {
@@ -53,7 +57,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-    await requireUserId(request);
+    const userId = await requireUserId(request);
+
+    // Get the user's permissions
+    const permissions = await getPermissionsById(userId);
+    const canUpdateUser = hasPermission(permissions as AdminPermission[], 'UpdateUser');
+
+    if (!canUpdateUser) {
+        return new Response(
+            JSON.stringify({ error: 'You do not have permission to update this user' }),
+            { status: 403 }
+        );
+    }
 
     const formData = await request.formData();
     const name = formData.get('name') as string;

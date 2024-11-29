@@ -28,4 +28,5 @@ export const userSelect = {
   role: true,
   createdAt: true,
   updatedAt: true,
+  permissions: true,
 } as const
