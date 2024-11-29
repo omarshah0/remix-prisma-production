@@ -2,10 +2,44 @@ import bcrypt from 'bcryptjs'
 import { db } from '~/services/db.server'
 import { CreateUserInput, UpdateUserInput, userSelect } from './types'
 import { bulkCreate } from './bulk.server'
+import { Prisma } from '@prisma/client'
 
-export async function list(cursor?: string, limit: number = 10) {
+// Define valid sort columns
+type SortableColumn = 'createdAt' | 'updatedAt' | 'email' | 'name'
+type SortOrder = 'asc' | 'desc'
+
+// Validate if the provided column is sortable
+function isValidSortColumn(column: string): column is SortableColumn {
+  return ['createdAt', 'updatedAt', 'email', 'name'].includes(column)
+}
+
+// Validate if the provided order is valid
+function isValidSortOrder(order: string): order is SortOrder {
+  return ['asc', 'desc'].includes(order.toLowerCase())
+}
+
+export async function list(
+  cursor?: string,
+  limit: number = 10,
+  sortBy?: string,
+  sortOrder?: string
+) {
   // Enforce pagination limits: minimum 10, maximum 100 items per page
   limit = limit > 100 ? 100 : limit < 10 ? 10 : limit
+
+  // Default sort configuration
+  let orderBy: Prisma.AdminOrderByWithRelationInput = { createdAt: 'desc' }
+
+  // Validate and apply custom sorting if provided
+  if (sortBy) {
+    if (isValidSortColumn(sortBy)) {
+      const validatedOrder = sortOrder?.toLowerCase() || 'desc'
+      if (isValidSortOrder(validatedOrder)) {
+        orderBy = { [sortBy]: validatedOrder }
+      }
+    }
+  }
+
   const records = await db.admin.findMany({
     take: limit + 1, // Take one extra to check if there are more
     ...(cursor && {
@@ -14,7 +48,7 @@ export async function list(cursor?: string, limit: number = 10) {
         id: cursor,
       },
     }),
-    orderBy: { createdAt: 'desc' },
+    orderBy,
     select: userSelect,
   })
 
@@ -28,6 +62,10 @@ export async function list(cursor?: string, limit: number = 10) {
       nextCursor,
       hasNextPage,
       limit,
+    },
+    sort: {
+      column: sortBy || 'createdAt',
+      order: (sortOrder?.toLowerCase() as SortOrder) || 'desc',
     },
   }
 }

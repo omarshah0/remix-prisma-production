@@ -24,10 +24,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const url = new URL(request.url);
     const cursor = url.searchParams.get('cursor') || undefined;
+    const sortBy = url.searchParams.get('sortBy') || undefined;
+    const sortOrder = url.searchParams.get('sortOrder') || undefined;
     const limit = 10;
 
     try {
-        const { data, pagination } = await list(cursor, limit);
+        const { data, pagination } = await list(cursor, limit, sortBy, sortOrder);
 
         return new Response(JSON.stringify({ data, pagination }), {
             headers: {
@@ -141,4 +143,4 @@ export default function UserList() {
             )}
         </div>
     );
-} 
+}
