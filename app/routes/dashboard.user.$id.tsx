@@ -9,8 +9,8 @@ import { useEffect, useRef } from 'react';
 
 // Repository
 import { requireUserId } from '~/services/auth.server';
-import { getUserById, updateUser } from '~/repository/user/index.server';
-import type { User } from '~/repository/user/types';
+import { getById, update } from '~/repository/admin/index.server';
+import type { User } from '~/repository/admin/types';
 
 // Inline Types
 type LoaderData = {
@@ -26,7 +26,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     await requireUserId(request);
 
     try {
-        const user = await getUserById(params.id!);
+        const user = await getById(params.id!);
 
         return new Response(
             JSON.stringify({ user }),
@@ -61,7 +61,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const role = formData.get('role') as 'ADMIN' | 'USER';
 
     try {
-        const updatedUser = await updateUser(params.id!, {
+        const updatedUser = await update(params.id!, {
             name,
             email,
             role,

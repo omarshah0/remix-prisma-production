@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 
 // Repository
 import { createUserSession, getUserSession } from '~/services/auth.server';
-import { getUserByEmail, verifyUserPassword } from '~/repository/user/index.server';
+import { getByEmail, verifyPassword } from '~/repository/admin/index.server';
 
 // Inline Types
 type ActionData = {
@@ -45,12 +45,12 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     try {
-        const isValid = await verifyUserPassword(email, password);
+        const isValid = await verifyPassword(email, password);
         if (!isValid) {
             throw new Error('Invalid credentials');
         }
 
-        const user = await getUserByEmail(email);
+        const user = await getByEmail(email);
         return createUserSession(user.id, '/dashboard');
     } catch (error) {
         return new Response(

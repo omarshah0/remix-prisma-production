@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 
 // Services
 import { createUserSession, getUserSession } from '~/services/auth.server';
-import { createUser } from '~/repository/user/index.server';
+import { create } from '~/repository/admin/index.server';
 
 // Inline Types
 type ActionData = {
@@ -31,7 +31,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const name = formData.get('name') as string;
 
   try {
-    const user = await createUser({
+    const user = await create({
       email,
       password,
       name,

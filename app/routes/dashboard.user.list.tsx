@@ -1,23 +1,21 @@
 // Types
-import type { UserListItem } from '~/repository/user/types';
+import type { UserListItem } from '~/repository/admin/types';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 
 // Remix React
 import { Link, useLoaderData, useNavigation, Form } from '@remix-run/react';
 
 // Repository
-import { listUsers } from '~/repository/user/index.server';
+import { list } from '~/repository/admin/index.server';
 import { requireUserId } from '~/services/auth.server';
 
 // Inline Types
 type LoaderData = {
-    users: UserListItem[];
+    data: UserListItem[];
     pagination: {
-        total: number;
-        pages: number;
-        currentPage: number;
-        perPage: number;
-        hasMore: boolean;
+        nextCursor: string | undefined;
+        hasNextPage: boolean;
+        limit: number;
     };
 };
 
@@ -25,13 +23,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     await requireUserId(request);
 
     const url = new URL(request.url);
-    const page = Number(url.searchParams.get('page')) || 1;
+    const cursor = url.searchParams.get('cursor') || undefined;
     const limit = 10;
 
     try {
-        const { users, pagination } = await listUsers(page, limit);
+        const { data, pagination } = await list(cursor, limit);
 
-        return new Response(JSON.stringify({ users, pagination }), {
+        return new Response(JSON.stringify({ data, pagination }), {
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -50,7 +48,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function UserList() {
-    const { users, pagination } = useLoaderData<LoaderData>();
+    const { data, pagination } = useLoaderData<LoaderData>();
     const navigation = useNavigation();
 
     return (
@@ -66,30 +64,30 @@ export default function UserList() {
             </div>
 
             <div className="border-t border-gray-200">
-                {users.length === 0 ? (
+                {data.length === 0 ? (
                     <p className="text-center py-4 text-gray-500">No users found</p>
                 ) : (
                     <ul role="list" className="divide-y divide-gray-200">
-                        {users.map((user) => (
-                            <li key={user.id} className="px-4 py-4">
+                        {data.map((item) => (
+                            <li key={item.id} className="px-4 py-4">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                                        <p className="text-sm text-gray-500">{user.email}</p>
+                                        <p className="text-sm font-medium text-gray-900">{item.name}</p>
+                                        <p className="text-sm text-gray-500">{item.email}</p>
                                         <p className="text-xs text-gray-400">
-                                            {new Date(user.createdAt).toLocaleDateString()}
+                                            {new Date(item.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
                                         <Link
-                                            to={`/dashboard/user/${user.id}`}
+                                            to={`/dashboard/user/${item.id}`}
                                             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                                         >
                                             Edit
                                         </Link>
                                         <Form
                                             method="post"
-                                            action={`/dashboard/user/${user.id}/delete`}
+                                            action={`/dashboard/user/${item.id}/delete`}
                                             onSubmit={(event) => {
                                                 if (!confirm('Are you sure you want to delete this user?')) {
                                                     event.preventDefault();
@@ -112,34 +110,20 @@ export default function UserList() {
             </div>
 
             {/* Pagination */}
-            {pagination.pages > 1 && (
+            {pagination.hasNextPage && (
                 <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                     <div className="flex-1 flex justify-between items-center">
                         <p className="text-sm text-gray-700">
                             Showing{' '}
                             <span className="font-medium">
-                                {(pagination.currentPage - 1) * pagination.perPage + 1}
+                                {pagination.limit}
                             </span>{' '}
-                            to{' '}
-                            <span className="font-medium">
-                                {Math.min(pagination.currentPage * pagination.perPage, pagination.total)}
-                            </span>{' '}
-                            of{' '}
-                            <span className="font-medium">{pagination.total}</span>{' '}
-                            results
+                            results per page
                         </p>
                         <div className="flex gap-2">
-                            {pagination.currentPage > 1 && (
+                            {pagination.nextCursor && (
                                 <Link
-                                    to={`?page=${pagination.currentPage - 1}`}
-                                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                >
-                                    Previous
-                                </Link>
-                            )}
-                            {pagination.currentPage < pagination.pages && (
-                                <Link
-                                    to={`?page=${pagination.currentPage + 1}`}
+                                    to={`?cursor=${pagination.nextCursor}`}
                                     className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                 >
                                     Next

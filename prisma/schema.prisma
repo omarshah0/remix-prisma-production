@@ -7,7 +7,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
+model Admin {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
@@ -20,4 +20,4 @@ model User {
 enum Role {
   ADMIN
   USER
-} 
+}
