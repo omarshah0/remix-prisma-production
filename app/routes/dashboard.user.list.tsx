@@ -2,8 +2,9 @@
 import type { UserListItem } from '~/repository/admin/types';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 
-// Remix React
-import { Link, useLoaderData, useNavigation, Form } from '@remix-run/react';
+// Remix
+import { json } from '@remix-run/node';
+import { Link, useLoaderData, useNavigation, Form, useSearchParams } from '@remix-run/react';
 
 // Repository
 import { list } from '~/repository/admin/index.server';
@@ -29,22 +30,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const limit = 10;
 
     try {
-        const { data, pagination } = await list(cursor, limit, sortBy, sortOrder);
-
-        return new Response(JSON.stringify({ data, pagination }), {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const result = await list(cursor, limit, sortBy, sortOrder);
+        return json(result);
     } catch (error) {
-        return new Response(
-            JSON.stringify({ error: 'Failed to load users' }),
-            {
-                status: 500,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }
+        throw json(
+            { message: 'Failed to load users' },
+            { status: 500 }
         );
     }
 }
@@ -52,6 +43,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function UserList() {
     const { data, pagination } = useLoaderData<LoaderData>();
     const navigation = useNavigation();
+    const [searchParams] = useSearchParams();
+
+    // Function to preserve query params
+    const preserveQueryParams = (newCursor: string) => {
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('cursor', newCursor);
+        return `?${newSearchParams.toString()}`;
+    };
 
     return (
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -125,7 +124,7 @@ export default function UserList() {
                         <div className="flex gap-2">
                             {pagination.nextCursor && (
                                 <Link
-                                    to={`?cursor=${pagination.nextCursor}`}
+                                    to={preserveQueryParams(pagination.nextCursor)}
                                     className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                 >
                                     Next
