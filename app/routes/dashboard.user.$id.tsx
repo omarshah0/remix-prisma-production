@@ -1,7 +1,6 @@
 // Types
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import type { User } from '~/repository/admin/types';
-import type { AdminPermission } from '~/utils/adminPermissions.server';
 
 // Remix React
 import { Form, useLoaderData, useNavigation, useActionData, Link } from '@remix-run/react';
@@ -59,9 +58,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export async function action({ request, params }: ActionFunctionArgs) {
     const userId = await requireUserId(request);
 
-    // Get the user's permissions
-    const permissions = await getPermissionsById(userId);
-    const canUpdateUser = hasPermission(permissions as AdminPermission[], 'UpdateUser');
+    const canUpdateUser = await hasPermission(userId, 'UpdateUser');
 
     if (!canUpdateUser) {
         return new Response(

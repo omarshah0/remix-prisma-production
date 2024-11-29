@@ -1,22 +1,12 @@
-type Operation = {
-  id: string
-  name: string
-  description: string
-  createdAt: Date
-  updatedAt: Date
-}
+import { getById } from '~/repository/adminPermissions/index.server'
 
-export type AdminPermission = {
-  id: string
-  operation: Operation
-  createdAt: Date
-  updatedAt: Date
-}
-
-export function hasPermission(
-  permissions: AdminPermission[],
+export async function hasPermission(
+  userId: string,
   operationName: string
-): boolean {
+): Promise<boolean> {
+  // Get the user's permissions
+  const permissions = await getById(userId)
+
   return permissions.some(
     permission => permission.operation.name === operationName
   )
