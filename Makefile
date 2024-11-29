@@ -5,6 +5,10 @@ DB_PASSWORD=postgres
 DB_PORT=12121
 CONTAINER_NAME=remix-postgres
 
+# Redis configuration
+REDIS_PORT=6379
+REDIS_CONTAINER_NAME=remix-redis
+
 # Docker commands
 .PHONY: db-start db-stop db-restart db-create db-drop db-reset db-logs
 
@@ -40,9 +44,20 @@ db-reset: db-drop db-create
 db-logs:
 	@docker logs $(CONTAINER_NAME)
 
+# Start Redis container
+redis-start:
+	@docker run --name $(REDIS_CONTAINER_NAME) \
+		-p $(REDIS_PORT):6379 \
+		-d redis:latest
+
+# Stop and remove Redis container
+redis-stop:
+	@docker stop $(REDIS_CONTAINER_NAME) || true
+	@docker rm $(REDIS_CONTAINER_NAME) || true
+
 # Initialize project (first time setup)
-init: db-start
-	@echo "Waiting for database to start..."
+init: db-start redis-start
+	@echo "Waiting for services to start..."
 	npx prisma generate
 	npx prisma db push
 	@echo "Database URL: postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:$(DB_PORT)/$(DB_NAME)" 

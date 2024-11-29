@@ -3,6 +3,7 @@ import { db } from '~/services/db.server'
 import { CreateUserInput, UpdateUserInput, userSelect } from './types'
 import { bulkCreate } from './bulk.server'
 import { Prisma } from '@prisma/client'
+import { redis } from '~/services/redis.server'
 
 // Define valid sort columns
 type SortableColumn = 'createdAt' | 'updatedAt' | 'email' | 'name'
@@ -128,12 +129,29 @@ export async function update(id: string, data: UpdateUserInput) {
 }
 
 export async function remove(id: string) {
-  await db.admin.delete({
-    where: { id },
-    select: userSelect,
-  })
+  try {
+    // First get all sessions for this user
+    const userKey = `user:${id}:sessions`
+    const sessions = await redis.sMembers(userKey)
+    
+    // Delete all sessions for this user
+    for (const sessionId of sessions) {
+      await redis.del(`session:${sessionId}`)
+    }
+    
+    // Delete the user's session set
+    await redis.del(userKey)
+    
+    // Delete the user from database
+    await db.admin.delete({
+      where: { id },
+      select: userSelect,
+    })
 
-  return 'Record deleted successfully'
+    return 'Record deleted successfully'
+  } catch (error) {
+    throw error
+  }
 }
 
 export async function verifyPassword(email: string, password: string) {

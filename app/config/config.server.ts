@@ -12,4 +12,10 @@ export const config = {
     env: process.env.NODE_ENV,
     port: process.env.PORT,
   },
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    sessionExpiry: process.env.REDIS_SESSION_EXPIRY 
+      ? parseInt(process.env.REDIS_SESSION_EXPIRY) 
+      : 24 * 60 * 60, // 24 hours in seconds
+  },
 }
