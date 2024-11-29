@@ -11,7 +11,6 @@ import { useEffect, useRef } from 'react';
 // Repository
 import { requireUserId } from '~/services/auth.server';
 import { getById, update } from '~/repository/admin/index.server';
-import { getById as getPermissionsById } from '~/repository/adminPermissions/index.server';
 // Utils
 import { hasPermission } from '~/utils/adminPermissions.server';
 
