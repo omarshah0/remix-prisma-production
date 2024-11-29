@@ -43,7 +43,6 @@ db-logs:
 # Initialize project (first time setup)
 init: db-start
 	@echo "Waiting for database to start..."
-	@sleep 3
 	npx prisma generate
 	npx prisma db push
 	@echo "Database URL: postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:$(DB_PORT)/$(DB_NAME)" 
