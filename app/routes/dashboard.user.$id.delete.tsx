@@ -6,13 +6,13 @@ import { redirect } from '@remix-run/node';
 
 // Repository
 import { requireUserId } from '~/services/auth.server';
-import { UserRepository } from '~/repository/user/index.server';
+import { deleteUser } from '~/repository/user/index.server';
 
 export async function action({ request, params }: ActionFunctionArgs) {
     await requireUserId(request);
 
     try {
-        await UserRepository.delete(params.id!);
+        await deleteUser(params.id!);
         return redirect('/dashboard/user/list');
     } catch (error) {
         return new Response(

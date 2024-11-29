@@ -7,6 +7,20 @@ export type CreateUserInput = {
 
 export type UpdateUserInput = Partial<Omit<CreateUserInput, 'password'>>
 
+export type User = {
+  id: string
+  email: string
+  name: string | null
+  role: 'ADMIN' | 'USER'
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type UserListItem = Pick<
+  User,
+  'id' | 'email' | 'name' | 'role' | 'createdAt'
+>
+
 export const userSelect = {
   id: true,
   email: true,
@@ -14,4 +28,4 @@ export const userSelect = {
   role: true,
   createdAt: true,
   updatedAt: true,
-} as const 
+} as const

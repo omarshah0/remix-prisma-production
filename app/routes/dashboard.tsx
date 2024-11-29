@@ -1,13 +1,13 @@
 // Types
 import type { LoaderFunctionArgs } from '@remix-run/node';
-import type { User } from '~/types/user';
+import type { User } from '~/repository/user/types';
 
 // Remix React
 import { Link, Outlet, useLoaderData, Form } from '@remix-run/react';
 
 // Repository
 import { requireUserId } from '~/services/auth.server';
-import { UserRepository } from '~/repository/user/index.server';
+import { getUserById } from '~/repository/user/index.server';
 
 // Inline Types
 type LoaderData = {
@@ -18,7 +18,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserId(request);
 
   try {
-    const user = await UserRepository.getById(userId);
+    const user = await getUserById(userId);
 
     return new Response(
       JSON.stringify({ user }),
