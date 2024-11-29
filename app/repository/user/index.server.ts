@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { db } from '~/services/db.server'
 import { CreateUserInput, UpdateUserInput, userSelect } from './types'
+import { bulkCreateUsers } from './bulk.server'
 
 export async function listUsers(page: number = 1, limit: number = 10) {
   const skip = (page - 1) * limit
@@ -99,3 +100,5 @@ export async function verifyUserPassword(email: string, password: string) {
 
   return bcrypt.compare(password, user.password)
 }
+
+export { bulkCreateUsers }

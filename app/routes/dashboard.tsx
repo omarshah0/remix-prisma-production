@@ -7,11 +7,12 @@ import { Link, Outlet, useLoaderData, Form } from '@remix-run/react';
 
 // Repository
 import { requireUserId } from '~/services/auth.server';
-import { getUserById } from '~/repository/user/index.server';
+import { getUserById, bulkCreateUsers } from '~/repository/user/index.server';
 
 // Inline Types
 type LoaderData = {
   user: Pick<User, 'id' | 'email' | 'name' | 'role'>;
+  shafi: string;
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -19,9 +20,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const user = await getUserById(userId);
-
+    const shafi = await bulkCreateUsers()
     return new Response(
-      JSON.stringify({ user }),
+      JSON.stringify({ user, shafi }),
       {
         status: 200,
         headers: {
@@ -43,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Dashboard() {
-  const { user } = useLoaderData<LoaderData>();
+  const { user, shafi } = useLoaderData<LoaderData>();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -52,7 +53,7 @@ export default function Dashboard() {
           <div className="flex justify-between h-16">
             <div className="flex">
               <Link to="/dashboard" className="flex-shrink-0 flex items-center">
-                Dashboard
+                Dashboard ({shafi})
               </Link>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link
