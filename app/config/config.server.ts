@@ -14,8 +14,10 @@ export const config = {
   },
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
-    sessionExpiry: process.env.REDIS_SESSION_EXPIRY 
-      ? parseInt(process.env.REDIS_SESSION_EXPIRY) 
+    sessionExpiry: process.env.REDIS_SESSION_EXPIRY
+      ? parseInt(process.env.REDIS_SESSION_EXPIRY)
       : 24 * 60 * 60, // 24 hours in seconds
   },
 }
+
+console.log(config.redis.url)
