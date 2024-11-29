@@ -9,6 +9,7 @@ export async function list(cursor?: string, limit: number = 10) {
   const records = await db.admin.findMany({
     take: limit + 1, // Take one extra to check if there are more
     ...(cursor && {
+      skip: 1, // Skip the cursor item to avoid duplication
       cursor: {
         id: cursor,
       },
