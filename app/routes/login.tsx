@@ -7,9 +7,9 @@ import { Form, Link, redirect, useActionData, useNavigation } from '@remix-run/r
 // React
 import { useEffect, useRef } from 'react';
 
-// Services
+// Repository
 import { createUserSession, getUserSession } from '~/services/auth.server';
-import { UserService } from '~/services/user.server';
+import { UserRepository } from '~/repository/user/index.server';
 
 // Inline Types
 type ActionData = {
@@ -45,12 +45,12 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     try {
-        const isValid = await UserService.verifyPassword(email, password);
+        const isValid = await UserRepository.verifyPassword(email, password);
         if (!isValid) {
             throw new Error('Invalid credentials');
         }
 
-        const user = await UserService.getByEmail(email);
+        const user = await UserRepository.getByEmail(email);
         return createUserSession(user.id, '/dashboard');
     } catch (error) {
         return new Response(

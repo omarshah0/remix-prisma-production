@@ -5,8 +5,8 @@ import type { LoaderFunctionArgs } from '@remix-run/node';
 // Remix React
 import { Link, useLoaderData, useNavigation, Form } from '@remix-run/react';
 
-// Services
-import { UserService } from '~/services/user.server';
+// Repository
+import { UserRepository } from '~/repository/user/index.server';
 import { requireUserId } from '~/services/auth.server';
 
 // Inline Types
@@ -29,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const limit = 10;
 
     try {
-        const { users, pagination } = await UserService.listUsers(page, limit);
+        const { users, pagination } = await UserRepository.list(page, limit);
 
         return new Response(JSON.stringify({ users, pagination }), {
             headers: {

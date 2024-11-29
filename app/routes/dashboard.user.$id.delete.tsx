@@ -4,15 +4,15 @@ import type { ActionFunctionArgs } from '@remix-run/node';
 // Remix Node
 import { redirect } from '@remix-run/node';
 
-// Services
+// Repository
 import { requireUserId } from '~/services/auth.server';
-import { UserService } from '~/services/user.server';
+import { UserRepository } from '~/repository/user/index.server';
 
 export async function action({ request, params }: ActionFunctionArgs) {
     await requireUserId(request);
 
     try {
-        await UserService.deleteUser(params.id!);
+        await UserRepository.delete(params.id!);
         return redirect('/dashboard/user/list');
     } catch (error) {
         return new Response(

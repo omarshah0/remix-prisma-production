@@ -7,9 +7,9 @@ import { Form, useLoaderData, useNavigation, useActionData, Link } from '@remix-
 // React
 import { useEffect, useRef } from 'react';
 
-// Services
+// Repository
 import { requireUserId } from '~/services/auth.server';
-import { UserService } from '~/services/user.server';
+import { UserRepository } from '~/repository/user/index.server';
 import type { User } from '~/types/user';
 
 // Inline Types
@@ -26,7 +26,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     await requireUserId(request);
 
     try {
-        const user = await UserService.getById(params.id!);
+        const user = await UserRepository.getById(params.id!);
 
         return new Response(
             JSON.stringify({ user }),
@@ -61,7 +61,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const role = formData.get('role') as 'ADMIN' | 'USER';
 
     try {
-        const updatedUser = await UserService.updateUser(params.id!, {
+        const updatedUser = await UserRepository.update(params.id!, {
             name,
             email,
             role,
